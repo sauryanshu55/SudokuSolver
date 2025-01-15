@@ -70,14 +70,33 @@ namespace SudokuSolver
         {
             int[,] gridData = CollectGridNumbers();
 
-            // Example: Print the grid data to the console
-            for (int row = 0; row < gridData.GetLength(0); row++)
+            // Solve the Sudoku (assumes solveSudoku returns a tuple with solvability and solved grid)
+            var (isSolvable, solvedGrid) = GFG.solveSudoku(gridData, 9);
+
+            if (isSolvable)
             {
-                for (int col = 0; col < gridData.GetLength(1); col++)
+                // Update the Sudoku grid with the solved numbers
+                DisplaySolvedSudoku(solvedGrid);
+            }
+            else
+            {
+                MessageBox.Show("The Sudoku puzzle cannot be solved.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void DisplaySolvedSudoku(int[,] solvedGrid)
+        {
+            foreach (UIElement element in SudokuGrid.Children)
+            {
+                if (element is TextBox textBox)
                 {
-                    Console.Write(gridData[row, col] + " ");
+                    // Get the row and column of the TextBox
+                    int row = Grid.GetRow(textBox);
+                    int col = Grid.GetColumn(textBox);
+
+                    // Update the TextBox with the solved value
+                    textBox.Text = solvedGrid[row, col].ToString();
                 }
-                Console.WriteLine();
             }
         }
 
