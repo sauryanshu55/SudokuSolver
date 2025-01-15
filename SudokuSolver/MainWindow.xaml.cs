@@ -31,6 +31,20 @@ namespace SudokuSolver
             SudokuGrid.RowDefinitions.Clear();
             SudokuGrid.ColumnDefinitions.Clear();
 
+            var preFilledCells = new Dictionary<(int row, int col), string>
+                    {
+                        {(0, 0), "3"}, {(0, 2), "6"}, {(0, 3), "5"}, {(0, 5), "8"}, {(0, 6), "4"},
+                        {(1, 0), "5"}, {(1, 1), "2"},
+                        {(2, 1), "8"}, {(2, 2), "7"}, {(2, 7), "3"}, {(2, 8), "1"},
+                        {(3, 2), "3"}, {(3, 4), "1"}, {(3, 7), "8"},
+                        {(4, 0), "9"}, {(4, 3), "8"}, {(4, 4), "6"}, {(4, 5), "3"}, {(4, 8), "5"},
+                        {(5, 1), "5"}, {(5, 4), "9"}, {(5, 6), "6"},
+                        {(6, 0), "1"}, {(6, 1), "3"}, {(6, 6), "2"}, {(6, 7), "5"},
+                        {(7, 7), "7"}, {(7, 8), "4"},
+                        {(8, 2), "5"}, {(8, 3), "2"}, {(8, 5), "6"}, {(8, 6), "3"}
+                    };
+
+
             // Create row and column definitions (9 rows and 9 columns)
             for (int i = 0; i < gridSize; i++)
             {
@@ -50,12 +64,29 @@ namespace SudokuSolver
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         MaxLength = 1, // Allow only one character (digit)
-                        Margin = new Thickness(5),
+                        Margin = new Thickness(2),
                         TextAlignment = TextAlignment.Center,
                         FontSize = 16,
+                        BorderThickness = new Thickness(
+                    col % 3 == 0 ? 5 : 0.5,        // Left
+                    row % 3 == 0 ? 5 : 0.5,        // Top
+                    (col + 1) % 3 == 0 ? 5 : 0.5,  // Right
+                    (row + 1) % 3 == 0 ? 5 : 0.5   // Bottom
+                ),
+                        BorderBrush=Brushes.Black,
                     };
 
-                    // Assign the TextBox to the grid cell
+
+
+                    // Check if this cell is pre-filled
+                    if (preFilledCells.TryGetValue((row, col), out string? value))
+                    {
+                        numberBox.Text = value;
+                        numberBox.Foreground = Brushes.Red; // Optional: Different color for pre-filled numbers
+                        numberBox.Tag = "UserInput";
+                    }
+
+                    // Assign the TextBox to the grid cell;
                     Grid.SetRow(numberBox, row);
                     Grid.SetColumn(numberBox, col);
                     SudokuGrid.Children.Add(numberBox);
@@ -72,8 +103,9 @@ namespace SudokuSolver
 
             // Solve the Sudoku (assumes solveSudoku returns a tuple with solvability and solved grid)
             var (isSolvable, solvedGrid) = GFG.solveSudoku(gridData, 9);
+            var isSolved = GFG.IsValid(solvedGrid);
 
-            if (isSolvable)
+            if (isSolvable && isSolved)
             {
                 // Update the Sudoku grid with the solved numbers
                 DisplaySolvedSudoku(solvedGrid);
@@ -94,8 +126,19 @@ namespace SudokuSolver
                     int row = Grid.GetRow(textBox);
                     int col = Grid.GetColumn(textBox);
 
-                    // Update the TextBox with the solved value
-                    textBox.Text = solvedGrid[row, col].ToString();
+                    // Check if the TextBox was user-inputted (i.e., it has the "UserInput" tag)
+                    if (textBox.Tag?.ToString() == "UserInput")
+                    {
+                        // User input: Set text and leave it red
+                        textBox.Text = solvedGrid[row, col].ToString();
+                        textBox.Foreground = Brushes.Red;
+                    }
+                    else
+                    {
+                        // Automatically filled: Set text without red color
+                        textBox.Text = solvedGrid[row, col].ToString();
+                        textBox.Foreground = Brushes.Black;  // Reset to default color
+                    }
                 }
             }
         }
@@ -131,12 +174,36 @@ namespace SudokuSolver
             return numbers;
         }
 
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (UIElement element in SudokuGrid.Children)
+            {
+                if (element is TextBox numberBox)
+                {
+
+                    numberBox.Text = string.Empty; // Clear user-entered text
+                    numberBox.Tag = null;
+
+                }
+            }
+        }
+
+        private void ReloadButton_Click(object sender, RoutedEventArgs e)
+        {
+            CreateSudokuGrid();
+        }
 
         // Method to handle input validation (only allow numeric values)
         private void NumberBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             Regex regex = new Regex("^[0-9]$");
             e.Handled = !regex.IsMatch(e.Text); // Reject non-digit input
+
+            if (sender is TextBox textBox)
+            {
+                textBox.Foreground = Brushes.Red;
+                textBox.Tag = "UserInput";
+            }
         }
     }
 }
