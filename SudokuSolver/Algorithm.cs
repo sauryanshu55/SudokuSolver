@@ -2,7 +2,7 @@
 
 namespace Algorithm
 {
-    class GFG
+    class SudokuAlgorithm
     {
 
         public static bool isSafe(int[,] board,
