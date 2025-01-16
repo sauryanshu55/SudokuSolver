@@ -1,7 +1,14 @@
 ﻿using System;
 
+/*
+ * This namespace contains the Sudoku Algorithm.
+ * I converted a class assignment from C Cuda to C# for this project.
+ */
 namespace Algorithm
 {
+    /*
+     * A Helper function that the algo uses to check if placing a number on  a cell is safe (by the Sudoku rules) or not
+     */
     class SudokuAlgorithm
     {
 
@@ -10,36 +17,25 @@ namespace Algorithm
                                   int num)
         {
 
-            // Row has the unique (row-clash)
+            // Checking if row is unique (cannot have the same number in the row)
             for (int d = 0; d < board.GetLength(0); d++)
             {
-
-                // Check if the number
-                // we are trying to
-                // place is already present in
-                // that row, return false;
                 if (board[row, d] == num)
                 {
                     return false;
                 }
             }
 
-            // Column has the unique numbers (column-clash)
+            // Checking the smae for the column
             for (int r = 0; r < board.GetLength(0); r++)
             {
-
-                // Check if the number 
-                // we are trying to
-                // place is already present in
-                // that column, return false;
                 if (board[r, col] == num)
                 {
                     return false;
                 }
             }
 
-            // corresponding square has
-            // unique number (box-clash)
+            // Checking if the mini 3x3 one have the same numbers
             int sqrt = (int)Math.Sqrt(board.GetLength(0));
             int boxRowStart = row - row % sqrt;
             int boxColStart = col - col % sqrt;
@@ -57,17 +53,19 @@ namespace Algorithm
                 }
             }
 
-            // if there is no clash, it's safe
+            // if there is no clash, it's safe. We put it there
             return true;
         }
 
+        /*
+         * Driver code for the algorithm
+         */
         public static (bool, int[,]) solveSudoku(int[,] board, int n)
         {
             int row = -1;
             int col = -1;
             bool isEmpty = true;
 
-            // Find an empty cell
             for (int i = 0; i < n; i++)
             {
                 for (int j = 0; j < n; j++)
@@ -86,7 +84,7 @@ namespace Algorithm
                 }
             }
 
-            // If no empty cell is found, Sudoku is solved
+            // Solved Sudoku. Retun a tuple
             if (isEmpty)
             {
                 return (true, board);
@@ -100,23 +98,25 @@ namespace Algorithm
                     board[row, col] = num;
 
                     var result = solveSudoku(board, n);
-                    if (result.Item1) // If the recursive call succeeded
+                    if (result.Item1) 
                     {
                         return result;
                     }
 
-                    // Undo the move (backtracking)
+                    // Backtracking
                     board[row, col] = 0;
                 }
             }
 
-            // If no number can fit, the Sudoku is unsolvable
+            // Usolvable sudoku
             return (false, board);
         }
 
+        /*
+         * A helper function to check if the algorithm's solution is correct
+         * */
         public static bool IsValid(int[,] mat)
         {
-            // Track of numbers in rows, columns, and sub-matrix
             int[,] rows = new int[9, 10];
             int[,] cols = new int[9, 10];
             int[,] subMat = new int[9, 10];
@@ -125,28 +125,28 @@ namespace Algorithm
             {
                 for (int j = 0; j < 9; j++)
                 {
-                    // Skip empty cells
+                    // Skiping empty cells
                     if (mat[i, j] == 0)
                         continue;
 
                     // Current value
                     int val = mat[i, j];
 
-                    // Check for duplicates in row
+                    // Checking for row-clash
                     if (rows[i, val] == 1)
                         return false;
 
                     // Mark as seen
                     rows[i, val] = 1;
 
-                    // Check for duplicates in column
+                    // Checking column clash
                     if (cols[j, val] == 1)
                         return false;
 
                     // Mark as seen
                     cols[j, val] = 1;
 
-                    // Check for duplicates in sub-grid
+                    // Checking the mini 3x3 box clash
                     int idx = (i / 3) * 3 + j / 3;
                     if (subMat[idx, val] == 1)
                         return false;
