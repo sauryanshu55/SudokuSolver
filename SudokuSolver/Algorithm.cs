@@ -2,7 +2,7 @@
 
 /*
  * This namespace contains the Sudoku Algorithm.
- * I converted a class assignment from C Cuda to C# for this project.
+ * MOdified the algorithm from a solution found for a famous Leetcode probelm, into my own needs.
  */
 namespace Algorithm
 {
